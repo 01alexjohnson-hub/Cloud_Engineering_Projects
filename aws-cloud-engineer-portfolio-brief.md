@@ -1,37 +1,39 @@
-# AWS Cloud Engineer Portfolio — Project Brief
+# AWS Cloud Engineer Portfolio
 
-## Background & Intent
+## The Short Version
 
-I'm transitioning from a FedRAMP 3PAO assessment background into AWS Cloud Engineering. This portfolio is designed to be sent directly to recruiters alongside my resume — or in place of it — to demonstrate hands-on cloud engineering skills that map to what's actually being hired for in government/federal cloud roles.
+I spent the last few years at various 3PAO's assessing AWS/Azure/GCP environments for FedRAMP. I got really good at finding what was wrong with other people's infrastructure. At some point I realized I wanted to be the one building it right in the first place.
 
-**Budget constraint:** Under $10 total over 2 months. All projects must be buildable using AWS Free Tier, LocalStack, local Kubernetes (kind/Minikube), and free CI/CD (GitHub Actions). One brief "proof session" in real AWS (~$10) for screenshots, then tear down.
+So that's what this is. Four projects that show I can actually engineer cloud infrastructure, not just audit it. The FedRAMP background isn't baggage, it's the whole point. I already know what NIST 800-53 controls look like when they're implemented well (and when they're not), so everything I build starts with security and compliance baked in from the first commit.
 
-**My competitive edge:** I already understand NIST 800-53 controls, FedRAMP authorization processes, and federal compliance requirements from the assessor side. Most cloud engineers can build infrastructure but can't connect it to compliance outcomes. This portfolio bridges that gap.
+I built all of this on a near zero budget. Free tier, local tools, one short proof deploy per project for screenshots, then tear it down. The constraint was intentional with the idea that if I can build production grade infrastructure on a free tier, then working in a real production environment with allocated budgets and teams pulling together would translate smoothly.
 
 ---
 
-## Job Market Analysis (What's Actually Being Asked For)
+## What I Keep Seeing on Job Boards
 
-Based on analysis of three current cloud engineer postings (Anivas Tech, Sensiple/Dice GovCloud role, ClearanceJobs DevSecOps Specialist), here's what keeps appearing:
+I've been watching cloud engineer postings for a while now, especially in the federal and GovCloud space. Certain skills show up in almost every listing, and I wanted to make sure these projects cover them deliberately, not by accident.
 
-### Tier 1 — Non-Negotiables
+### What every posting asks for
 - Terraform (modules, remote state, multi-environment)
-- AWS core services (VPC, IAM, EC2, S3, CloudWatch, KMS, Security Hub)
-- Docker + Kubernetes/EKS (Helm, RBAC, pod security, cluster lifecycle)
-- CI/CD pipelines with security gates (GitHub Actions, GitLab CI, CodePipeline)
-- Python and Bash scripting for automation
+- AWS core (VPC, IAM, EC2, S3, CloudWatch, KMS, Security Hub)
+- Docker + Kubernetes/EKS (Helm, RBAC, pod security)
+- CI/CD with security gates (GitHub Actions, GitLab CI, CodePipeline)
+- Python and Bash scripting
 
-### Tier 2 — Differentiators
-- Compliance-as-code (AWS Config Rules, OPA, Checkov mapped to NIST 800-53)
-- Zero Trust Architecture (service mesh, pod security policies, IAM boundaries)
-- Monitoring/observability (CloudWatch, Prometheus, Grafana, ELK/EFK)
-- Runbooks, architecture diagrams, SOPs, DR documentation
+### Where I think I can differentiate
+- Compliance-as-code (Config Rules, OPA, Checkov mapped to NIST 800-53)
+- Zero Trust (service mesh, pod security, IAM boundaries)
+- Monitoring and observability (CloudWatch, Prometheus, Grafana)
+- Runbooks, architecture docs, SOPs
 
-### Tier 3 — Nice-to-Haves That Matter
-- Cost optimization (tagging, reserved capacity, right-sizing)
-- Cloud migration planning and execution
-- AWS certifications (Solutions Architect, Security Specialty)
-- GovCloud-specific operational constraints
+Most engineers can check the first box. Not many can tie their infrastructure decisions back to specific compliance controls and explain why it matters. That's the gap I'm building into.
+
+### Skills I'm also working toward
+- Cost optimization and tagging strategy
+- Cloud migration planning
+- AWS certs (I have the AI Practitioner, Solutions Architect is next)
+- GovCloud operational experience
 
 ---
 
@@ -39,125 +41,93 @@ Based on analysis of three current cloud engineer postings (Anivas Tech, Sensipl
 
 ### Project 1: FedRAMP-Ready AWS Landing Zone
 
-**Repo name:** `fedramp-aws-landing-zone`
+**Repo:** `fedramp-aws-landing-zone` | **Status:** Complete
 
-**What it is:** A production-grade Terraform module that deploys a multi-account AWS Organization with FedRAMP-aligned security guardrails baked in from day one.
+This is the flagship. A full Terraform landing zone that deploys a multi-account AWS Organization with FedRAMP security guardrails. 77 resources across 7 modules, every single one mapped to a NIST 800-53 control.
 
-**What it demonstrates:** IaC proficiency, AWS security services, compliance-to-infrastructure mapping, architectural thinking.
+I deployed it to a real AWS account, ran Security Hub's automated NIST 800-53 checks (scored 44%, which is expected for free tier since the remaining controls need production services like ALB/TLS, WAF, and KMS CMKs), captured screenshots, then destroyed everything.
 
-**Key deliverables:**
-- Terraform modules for: AWS Organizations + SCPs, CloudTrail (org-wide), GuardDuty, Security Hub (NIST framework), AWS Config Rules mapped to 800-53 controls, centralized logging (S3 + CloudWatch Logs), VPC architecture with proper segmentation, IAM baseline policies and permission boundaries
-- A `CONTROL_MAPPING.md` that maps every Terraform resource to the NIST 800-53 control it satisfies
-- Architecture diagram (draw.io or Mermaid)
-- Successful `terraform plan` output as validation
-- Screenshots from one real deploy session (budget: ~$5, then destroy)
+What it covers:
+- AWS Organizations with 5 SCPs that even account admins can't override
+- Org wide CloudTrail, GuardDuty, Security Hub with NIST 800-53 standards
+- AWS Config with 6 managed rules (encryption, MFA, SSH)
+- VPC with 3 tier security group chaining (ALB > App > Data)
+- IAM permission boundaries that cap what any role can do
+- Centralized encrypted logging with lifecycle to Glacier
+- A CONTROL_MAPPING.md that maps every resource to its NIST control
 
-**Success criteria:**
-- [ ] A recruiter with zero context can read the README and understand what it does and why it matters within 60 seconds
-- [ ] `terraform validate` and `terraform plan` pass cleanly
-- [ ] At least 15 NIST 800-53 controls are mapped to infrastructure resources
-- [ ] Architecture diagram is clear and professional
-- [ ] Module is structured for reuse (variables, outputs, sensible defaults)
-
-**Cost:** $0 for development, ~$5 for one proof-of-concept deploy + screenshots
+**Cost:** $0 dev, ~$5 proof deploy
 
 ---
 
 ### Project 2: Compliance-as-Code CI/CD Pipeline
 
-**Repo name:** `compliance-cicd-pipeline`
+**Repo:** `compliance-cicd-pipeline` | **Status:** Not started
 
-**What it is:** A GitHub Actions pipeline that scans Terraform code against custom NIST 800-53 policy sets, blocks non-compliant deployments, and generates a compliance coverage report as a build artifact.
+This one came from seeing how many assessment findings trace back to the same problem: somebody deployed something that never should have passed a policy check. A GitHub Actions pipeline that scans Terraform against custom NIST 800-53 policy sets and blocks non-compliant deployments before they ever reach an environment.
 
-**What it demonstrates:** DevSecOps thinking, CI/CD design, policy-as-code, shift-left security, the ability to translate compliance requirements into automated gates.
+The plan is to reuse the Terraform from Project 1 as the sample code being scanned, so it builds on what's already done.
 
-**Key deliverables:**
-- GitHub Actions workflow: lint (tflint) → validate → security scan (Checkov or tfsec) → custom OPA policy evaluation → terraform plan → compliance report generation
-- Custom Checkov or OPA policies mapped to specific 800-53 controls
-- Sample Terraform code (can reuse pieces from Project 1) that the pipeline scans
-- Compliance report artifact (markdown or HTML) showing: controls checked, pass/fail per control, overall coverage percentage
-- Example PR showing a blocked deployment due to a policy violation
-- Example PR showing a passing deployment
+What it covers:
+- Full pipeline: lint > validate > security scan (Checkov) > OPA policies > plan > compliance report
+- Custom policies mapped to specific 800-53 controls
+- Example PRs showing blocked and passing deployments
+- Reports readable by someone who isn't an engineer
 
-**Success criteria:**
-- [ ] Pipeline runs end-to-end on every PR with zero manual steps
-- [ ] At least 10 custom compliance policies are defined and documented
-- [ ] A failing PR clearly shows which control was violated and why
-- [ ] Compliance report is readable by a non-technical stakeholder
-- [ ] Total CI runtime under 5 minutes
-
-**Cost:** $0 (GitHub Actions free tier on public repos, all tools open source)
+**Cost:** $0 (GitHub Actions free tier, all tools open source)
 
 ---
 
 ### Project 3: Hardened Kubernetes Cluster with Zero Trust
 
-**Repo name:** `hardened-k8s-zero-trust`
+**Repo:** `hardened-k8s-zero-trust` | **Status:** Not started
 
-**What it is:** A Terraform-provisioned Kubernetes cluster with defense-in-depth security: network policies, RBAC, pod security standards, service mesh with mTLS, runtime threat detection, and full observability. Built on kind/Minikube locally, architected for EKS deployment.
+Kubernetes keeps showing up in every posting I look at, and most of the implementations I've assessed have weak network policies and overly permissive RBAC. I wanted to build one the right way. Defense-in-depth from the ground up: network policies, RBAC, pod security, service mesh with mTLS, Falco for runtime detection, and Prometheus/Grafana for observability. Runs on kind locally, architected so the EKS toggle is ready to go.
 
-**What it demonstrates:** Kubernetes security, Zero Trust implementation, observability stack design, IaC for container orchestration.
+What it covers:
+- Namespace isolation and network policies that provably block unauthorized traffic
+- RBAC with least-privilege roles
+- Istio or Linkerd for mTLS between services
+- Falco for runtime security alerts
+- Grafana dashboards with real metrics
+- Incident response runbook (what to do when Falco fires)
 
-**Key deliverables:**
-- Terraform modules with a `local`/`eks` deployment toggle
-- Kubernetes manifests and Helm charts for: namespace isolation + network policies, RBAC roles (least-privilege), pod security standards (restricted), Istio or Linkerd service mesh (mTLS between services), Falco for runtime security monitoring, Prometheus + Grafana dashboards, Fluent Bit log shipping
-- A sample multi-service application to demonstrate the security controls in action
-- Runbook for incident response (what to do when Falco fires an alert)
-- Architecture diagram showing traffic flow, trust boundaries, and monitoring
-
-**Success criteria:**
-- [ ] Cluster deploys and runs locally via `make up` or equivalent single command
-- [ ] Network policies provably block unauthorized pod-to-pod traffic (demonstrated in README)
-- [ ] mTLS is enforced between services (show Kiali or equivalent visualization)
-- [ ] Falco detects and alerts on a simulated policy violation
-- [ ] Grafana dashboard shows meaningful metrics
-- [ ] README clearly states "validated locally on kind, architected for EKS" with the EKS Terraform ready to use
-
-**Cost:** $0 (runs entirely on local machine)
+**Cost:** $0 (runs entirely local)
 
 ---
 
 ### Project 4: Cloud Migration Assessment Tool
 
-**Repo name:** `cloud-migration-planner`
+**Repo:** `cloud-migration-planner` | **Status:** Not started
 
-**What it is:** A Python CLI tool that takes a workload inventory (CSV input), analyzes dependencies, recommends AWS service mappings, estimates costs via the AWS Pricing API, and outputs a phased migration plan.
+This one comes from a different angle. During assessments I'd see organizations mid-migration with no real plan for how workloads were going to map to AWS services, what the dependencies looked like, or what it was going to cost. A Python CLI that takes a workload inventory (CSV), analyzes dependencies, recommends AWS service mappings, estimates costs via the AWS Pricing API, and outputs a phased migration plan.
 
-**What it demonstrates:** Migration planning skills, Python scripting, understanding of AWS service selection, cost awareness, documentation quality.
+What it covers:
+- Python CLI (Click or Typer) with clean error handling
+- Migration strategy engine (rehost, replatform, refactor)
+- AWS service mapping based on workload characteristics
+- Cost estimation using the public AWS Pricing API
+- Professional output you could actually hand to a client
+- Unit tests with 80%+ coverage
 
-**Key deliverables:**
-- Python CLI (Click or Typer) that accepts a CSV of workloads with fields like: name, type (web app, database, file server, etc.), OS, CPU, RAM, storage, dependencies
-- Migration strategy recommendation engine (rehost, replatform, refactor) based on workload characteristics
-- AWS service mapping (e.g., "SQL Server on Windows VM" → "RDS for SQL Server" or "Aurora PostgreSQL")
-- Cost estimation using AWS Pricing API (free, public)
-- Output: markdown report with dependency graph (Mermaid), phased timeline, per-workload recommendation, estimated monthly cost
-- Sample inventory CSV with 15-20 realistic workloads
-
-**Success criteria:**
-- [ ] `pip install` and run with one command
-- [ ] Handles edge cases gracefully (missing fields, unknown workload types)
-- [ ] Cost estimates are within reasonable range of AWS calculator
-- [ ] Output report is professional enough to hand to a client
-- [ ] Includes unit tests with 80%+ coverage
-
-**Cost:** $0 (AWS Pricing API is free, everything runs locally)
+**Cost:** $0 (Pricing API is free, everything local)
 
 ---
 
-## Recommended Build Order
+## Build Order
 
-1. **Project 1** (Landing Zone) — Start here. Highest signal, directly proves core competency, and pieces feed into Project 2.
-2. **Project 2** (Compliance Pipeline) — Build second, reuse Terraform from Project 1 as sample code to scan.
-3. **Project 3** (Kubernetes) — Third priority. More time-intensive but shows breadth.
-4. **Project 4** (Migration Tool) — Final project. Lighter lift, shows a different skill dimension.
+1. **Landing Zone** (done). Highest signal, proves core competency, and the Terraform feeds into Project 2.
+2. **Compliance Pipeline** next. Reuses Project 1 code, shows DevSecOps thinking.
+3. **Kubernetes** third. More time but shows breadth into container orchestration.
+4. **Migration Tool** last. Different skill dimension, lighter lift.
 
-## GitHub Profile Presentation
+## GitHub Presentation
 
 - Pin all four repos
-- Each repo needs: a polished README with architecture diagram, a clear "Quick Start" section, a LICENSE (Apache 2.0 or MIT), proper `.gitignore`, tagged releases
-- Create a profile README (`username/username` repo) that frames the portfolio narrative: "Cloud engineer with FedRAMP assessment background building compliance-native infrastructure"
-- Consistent commit history showing real development progression, not a single massive commit
+- Each one gets a polished README, architecture diagram, Quick Start, LICENSE, proper .gitignore, tagged releases
+- Profile README that frames the narrative: compliance background + hands-on engineering
+- Real commit history showing development progression, not one giant commit dump
 
-## What to Send Recruiters
+## What to Say to Recruiters
 
-Link to your GitHub profile with a one-liner: "I built these open-source projects to demonstrate how I bridge compliance expertise with hands-on cloud engineering — each one maps directly to skills in your job description." Then reference the specific project that's most relevant to their posting.
+Link to the GitHub profile. Something like: "I built these to show how compliance expertise and cloud engineering work together. Each project maps to skills in your posting." Then point them at whichever project is most relevant to the role.
