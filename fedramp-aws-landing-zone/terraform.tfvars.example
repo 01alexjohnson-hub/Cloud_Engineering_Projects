@@ -1,0 +1,23 @@
+# -----------------------------------------------------------------------------
+# Example variable values
+# Copy to terraform.tfvars and customize for your environment
+# NEVER commit terraform.tfvars to git — it may contain sensitive values
+# -----------------------------------------------------------------------------
+
+project_name = "fedramp-landing-zone"
+environment  = "dev"
+aws_region   = "us-east-1"
+vpc_cidr     = "10.0.0.0/16"
+
+availability_zones = [
+  "us-east-1a",
+  "us-east-1b",
+]
+
+common_tags = {
+  Project     = "fedramp-landing-zone"
+  ManagedBy   = "terraform"
+  Compliance  = "nist-800-53"
+  Environment = "dev"
+  Owner       = "alex"
+}
