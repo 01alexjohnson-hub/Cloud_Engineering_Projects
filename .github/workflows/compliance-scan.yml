@@ -47,3 +47,17 @@ jobs:
         run: |
           tflint --init
           tflint
+
+      # ── Stage 2: Terraform Validate ──
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: terraform validate
