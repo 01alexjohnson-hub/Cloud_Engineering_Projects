@@ -185,6 +185,18 @@ Scanning the [FedRAMP Landing Zone](../fedramp-aws-landing-zone/) Terraform as s
 
 Baseline failures are documented free-tier constraints — the pipeline's baseline-aware gate accepts these while blocking any new violations.
 
+## Production Improvements
+
+This pipeline is portfolio-ready. Moving it to a production environment, the following enhancements apply:
+
+**OIDC federation instead of long-lived keys** — The current setup uses IAM access keys stored as GitHub Secrets. Production should use GitHub's OIDC provider to assume an IAM role with short-lived session tokens. No secrets to rotate, no keys to leak. This is the current AWS/GitHub best practice for CI/CD authentication.
+
+**Branch protection rules** — Require the compliance scan to pass before merging. Currently the gate fails the job, but GitHub still allows the merge. Adding a branch protection rule that requires the `NIST 800-53 Compliance Scan` check to pass makes the gate enforceable.
+
+**Expanded OPA policy set** — The current 7 policies cover the highest-impact controls. A production set would expand to cover all applicable control families, with policies organized by family and tested against mock plan fixtures.
+
+**Notification integration** — Slack or email alerts when the pipeline blocks a deployment, so the security team has visibility without watching GitHub.
+
 ## License
 
 Apache 2.0 — see [LICENSE](./LICENSE)
