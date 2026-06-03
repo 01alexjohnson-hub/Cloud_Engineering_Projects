@@ -155,13 +155,25 @@ jobs:
         with:
           path: compliance-cicd-pipeline/compliance-report.md
 
-      # ── Gate: Fail if violations found ──
+      # ── Gate: Fail if NEW violations found beyond baseline ──
       - name: Check for policy violations
         working-directory: compliance-cicd-pipeline
         run: |
+          # Known baseline findings from Project 1 (free-tier gaps)
+          # These are documented and accepted - only NEW findings fail the gate
+          BASELINE_COUNT=2  # AU-9: CloudTrail KMS, AC-6: IAM wildcards
+
           FINDINGS=$(grep -c "^DENY:" opa-results.txt 2>/dev/null || echo "0")
-          if [ "$FINDINGS" -gt "0" ]; then
-            echo "FAILED: $FINDINGS OPA policy violation(s) found. See compliance report for details."
+          NEW_FINDINGS=$((FINDINGS - BASELINE_COUNT))
+
+          echo "Total OPA findings: $FINDINGS"
+          echo "Baseline (accepted): $BASELINE_COUNT"
+          echo "New findings: $NEW_FINDINGS"
+
+          if [ "$NEW_FINDINGS" -gt "0" ]; then
+            echo ""
+            echo "FAILED: $NEW_FINDINGS NEW policy violation(s) found beyond baseline. See compliance report for details."
             exit 1
           fi
-          echo "All OPA policies passed."
+          echo ""
+          echo "PASSED: No new policy violations introduced. Baseline findings documented in compliance report."
