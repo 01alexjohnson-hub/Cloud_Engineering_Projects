@@ -1,0 +1,34 @@
+name: Compliance Scan
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'compliance-cicd-pipeline/**'
+      - '.github/workflows/compliance-scan.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'compliance-cicd-pipeline/**'
+      - '.github/workflows/compliance-scan.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  AWS_REGION: us-east-1
+  WORKING_DIR: compliance-cicd-pipeline
+  TF_DIR: compliance-cicd-pipeline/terraform-sample
+
+jobs:
+  compliance-scan:
+    name: NIST 800-53 Compliance Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: compliance-cicd-pipeline
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4

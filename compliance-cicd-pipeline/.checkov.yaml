@@ -1,0 +1,41 @@
+# Checkov configuration for NIST 800-53 compliance scanning
+# Scoped to checks relevant to our policy set
+
+framework:
+  - terraform
+
+compact: true
+
+# Focus on checks aligned with our NIST 800-53 control families
+# SC - System and Communications Protection
+# AC - Access Control
+# AU - Audit and Accountability
+# CM - Configuration Management
+
+check:
+  # SC-28: Encryption at rest
+  - CKV_AWS_19   # S3 bucket server-side encryption
+  - CKV_AWS_145  # S3 bucket encrypted with KMS
+  - CKV_AWS_35   # CloudTrail encrypted with KMS
+  - CKV_AWS_158  # CloudWatch Log Group encrypted by KMS
+
+  # AC-3 / AC-6: Access control and least privilege
+  - CKV_AWS_53   # S3 block public ACLs
+  - CKV_AWS_54   # S3 block public policy
+  - CKV_AWS_55   # S3 ignore public ACLs
+  - CKV_AWS_56   # S3 restrict public buckets
+  - CKV_AWS_290  # IAM no write access without constraints
+  - CKV_AWS_289  # IAM no permissions management without constraints
+  - CKV_AWS_274  # Disallow AdministratorAccess policy
+  - CKV_AWS_355  # No wildcard resource for restrictable actions
+
+  # AU-2 / AU-9: Audit logging
+  - CKV_AWS_252  # CloudTrail defines SNS topic
+  - CKV_AWS_338  # CloudWatch log retention at least 1 year
+
+  # SC-7: Boundary protection
+  - CKV_AWS_130  # VPC subnets no auto-assign public IP
+  - CKV_AWS_231  # No NACL ingress 0.0.0.0/0 to port 3389
+
+  # CM-8: Configuration management
+  - CKV_AWS_300  # S3 lifecycle abort failed uploads

@@ -6,7 +6,7 @@ I spent the last few years at various 3PAO's assessing AWS/Azure/GCP environment
 
 So that's what this is. Four projects that show I can actually engineer cloud infrastructure, not just audit it. The FedRAMP background isn't baggage, it's the whole point. I already know what NIST 800-53 controls look like when they're implemented well (and when they're not), so everything I build starts with security and compliance baked in from the first commit.
 
-I built all of this on a near zero budget. Free tier, local tools, one short proof deploy per project for screenshots, then tear it down. The constraint was intentional with the idea that if I can build production grade infrastructure on a free tier, then working in a real production environment with allocated budgets and teams pulling together would translate smoothly.
+I built all of this on a near zero budget. Free tier, local tools, one short proof deploy per project for screenshots, then tear it down. The constraint was intentional with the idea that if I can build production grade infrastructure on free tier, then working in a real production environment with allocated budgets and teams pulling together would translate smoothly.
 
 ---
 
@@ -49,9 +49,9 @@ I deployed it to a real AWS account, ran Security Hub's automated NIST 800-53 ch
 
 What it covers:
 - AWS Organizations with 5 SCPs that even account admins can't override
-- Org wide CloudTrail, GuardDuty, Security Hub with NIST 800-53 standards
+- Org-wide CloudTrail, GuardDuty, Security Hub with NIST 800-53 standards
 - AWS Config with 6 managed rules (encryption, MFA, SSH)
-- VPC with 3 tier security group chaining (ALB > App > Data)
+- VPC with 3-tier security group chaining (ALB > App > Data)
 - IAM permission boundaries that cap what any role can do
 - Centralized encrypted logging with lifecycle to Glacier
 - A CONTROL_MAPPING.md that maps every resource to its NIST control
