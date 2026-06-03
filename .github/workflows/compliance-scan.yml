@@ -61,3 +61,20 @@ jobs:
       - name: Terraform Validate
         working-directory: compliance-cicd-pipeline/terraform-sample
         run: terraform validate
+
+      # ── Stage 3: Checkov ──
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: |
+          checkov -d . --config-file ../.checkov.yaml --output cli --output json --output-file-path console,checkov-results.json
+        continue-on-error: true
+
+      - name: Upload Checkov results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: checkov-results
+          path: compliance-cicd-pipeline/terraform-sample/checkov-results.json
