@@ -20,6 +20,7 @@ env:
   AWS_REGION: us-east-1
   WORKING_DIR: compliance-cicd-pipeline
   TF_DIR: compliance-cicd-pipeline/terraform-sample
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   compliance-scan:
@@ -96,3 +97,37 @@ jobs:
         run: |
           terraform plan -out=tfplan.binary -input=false
           terraform show -json tfplan.binary > tfplan.json
+
+      # ── Stage 5: OPA Policy Evaluation ──
+      - name: Install OPA
+        run: |
+          curl -sL https://openpolicyagent.org/downloads/latest/opa_linux_amd64_static -o opa
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+          opa version
+
+      - name: Run OPA policy evaluation
+        working-directory: compliance-cicd-pipeline
+        run: |
+          opa eval -d policies/opa/ -i terraform-sample/tfplan.json "data.terraform" --format raw | python3 -c "
+          import json, sys
+          val = json.load(sys.stdin)
+          findings = []
+          for pkg, data in val.items():
+              if 'deny' in data:
+                  for d in data['deny']:
+                      findings.append(d)
+                      print(f'DENY: {d}')
+          if not findings:
+              print('All OPA policies passed.')
+          else:
+              print(f'\n{len(findings)} policy violation(s) found.')
+          " | tee opa-results.txt
+        continue-on-error: true
+
+      - name: Upload OPA results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: opa-results
+          path: compliance-cicd-pipeline/opa-results.txt
