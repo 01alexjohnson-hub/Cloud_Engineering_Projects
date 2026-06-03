@@ -147,3 +147,10 @@ jobs:
         with:
           name: compliance-report
           path: compliance-cicd-pipeline/compliance-report.md
+
+      # ── Stage 7: PR Comment ──
+      - name: Post compliance report to PR
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          path: compliance-cicd-pipeline/compliance-report.md
