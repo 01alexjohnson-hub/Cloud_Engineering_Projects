@@ -131,3 +131,19 @@ jobs:
         with:
           name: opa-results
           path: compliance-cicd-pipeline/opa-results.txt
+
+      # ── Stage 6: Compliance Report ──
+      - name: Generate compliance report
+        working-directory: compliance-cicd-pipeline
+        run: |
+          python3 scripts/generate_report.py \
+            terraform-sample/checkov-results.json \
+            opa-results.txt \
+            compliance-report.md
+
+      - name: Upload compliance report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compliance-report
+          path: compliance-cicd-pipeline/compliance-report.md
