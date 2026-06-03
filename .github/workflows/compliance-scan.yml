@@ -154,3 +154,14 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           path: compliance-cicd-pipeline/compliance-report.md
+
+      # ── Gate: Fail if violations found ──
+      - name: Check for policy violations
+        working-directory: compliance-cicd-pipeline
+        run: |
+          FINDINGS=$(grep -c "^DENY:" opa-results.txt 2>/dev/null || echo "0")
+          if [ "$FINDINGS" -gt "0" ]; then
+            echo "FAILED: $FINDINGS OPA policy violation(s) found. See compliance report for details."
+            exit 1
+          fi
+          echo "All OPA policies passed."
