@@ -32,3 +32,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # ── Stage 1: tflint ──
+      - name: Install tflint
+        run: |
+          curl -sL https://github.com/terraform-linters/tflint/releases/latest/download/tflint_linux_amd64.zip -o tflint.zip
+          unzip tflint.zip
+          sudo mv tflint /usr/local/bin/
+          rm tflint.zip
+          tflint --version
+
+      - name: Run tflint
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: |
+          tflint --init
+          tflint
