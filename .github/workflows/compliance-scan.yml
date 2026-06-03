@@ -78,3 +78,21 @@ jobs:
         with:
           name: checkov-results
           path: compliance-cicd-pipeline/terraform-sample/checkov-results.json
+
+      # ── Stage 4: Terraform Plan ──
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Init (with backend)
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: terraform init -backend=false
+
+      - name: Terraform Plan
+        working-directory: compliance-cicd-pipeline/terraform-sample
+        run: |
+          terraform plan -out=tfplan.binary -input=false
+          terraform show -json tfplan.binary > tfplan.json
